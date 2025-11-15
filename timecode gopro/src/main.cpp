@@ -1,18 +1,25 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+constexpr uint8_t kLedPin = 2;
+
+void reportLedState(bool is_on) {
+  Serial.print("LED is ");
+  Serial.println(is_on ? "ON" : "OFF");
+}
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
+  delay(100);
+  pinMode(kLedPin, OUTPUT);
+  reportLedState(false);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+  digitalWrite(kLedPin, HIGH);
+  reportLedState(true);
+  delay(2000);
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  digitalWrite(kLedPin, LOW);
+  reportLedState(false);
+  delay(1000);
 }
