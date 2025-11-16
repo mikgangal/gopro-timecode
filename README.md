@@ -110,10 +110,11 @@ This project automatically synchronizes your GoPro camera's internal clock with 
 When the GoPro is powered off and back on:
 
 1. ESP32 detects WiFi disconnection
-2. Waits 30 seconds for GoPro to boot
+2. Waits 5 seconds then attempts reconnection
 3. Performs full reconnection routine (BLE → WiFi AP → WiFi)
 4. Immediately syncs time after reconnection
-5. Continues monitoring
+5. Retries every 5 seconds until successful
+6. Continues monitoring once connected
 
 ### Periodic Sync
 
@@ -153,7 +154,7 @@ You can adjust timing and buzzer parameters in `main.cpp`:
 
 Reconnection timing (in `loop()`):
 ```cpp
-if (!isConnected && (millis() - lastReconnectAttempt > 30000)) {  // 30 seconds
+if (!isConnected && (millis() - lastReconnectAttempt > 5000)) {  // 5 seconds
     // Reconnection logic
 }
 
@@ -242,9 +243,10 @@ Setup complete!
 - Ensure GoPro firmware is up to date
 
 ### Reconnection Issues
-- Wait at least 30 seconds after powering GoPro back on
+- ESP32 automatically retries every 5 seconds
 - Check serial monitor for reconnection attempts
 - Verify GoPro remains in WiFi mode after boot
+- Ensure GoPro has fully booted before first retry attempt
 
 ## Compatible GoPro Models
 

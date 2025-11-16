@@ -375,8 +375,8 @@ void setup() {
     if (!rtc.begin()) {
         Serial.println("[RTC] ERROR: Couldn't find DS3231 RTC!");
         Serial.println("[RTC] Please check I2C connections (SDA=21, SCL=22)");
-        Serial.println("Restarting in 30 seconds...");
-        delay(30000);
+        Serial.println("Restarting in 5 seconds...");
+        delay(5000);
         ESP.restart();
         return;
     }
@@ -391,6 +391,9 @@ void setup() {
                   now.year(), now.month(), now.day(),
                   now.hour(), now.minute(), now.second());
     
+    Serial.println("\n[INFO] Waiting 5 seconds before connecting to GoPro...");
+    delay(5000);
+    
     // Initialize BLE
     Serial.println("[BLE] Initializing BLE...");
     NimBLEDevice::init("ESP32-GoPro");
@@ -403,8 +406,8 @@ void setup() {
         Serial.println("  1. GoPro is powered on");
         Serial.println("  2. GoPro Bluetooth is enabled");
         Serial.println("  3. GoPro is in pairing mode");
-        Serial.println("\nRestarting in 30 seconds...");
-        delay(30000);
+        Serial.println("\nRestarting in 5 seconds...");
+        delay(5000);
         ESP.restart();
         return;
     }
@@ -412,8 +415,8 @@ void setup() {
     // Connect via BLE
     if (!connectToGoPro(pGoProAddress)) {
         Serial.println("\n[ERROR] Failed to connect to GoPro via BLE");
-        Serial.println("Restarting in 30 seconds...");
-        delay(30000);
+        Serial.println("Restarting in 5 seconds...");
+        delay(5000);
         ESP.restart();
         return;
     }
@@ -425,7 +428,7 @@ void setup() {
     if (!getWiFiSSID() || !getWiFiPassword()) {
         Serial.println("\n[ERROR] Failed to get WiFi credentials");
         pClient->disconnect();
-        delay(30000);
+        delay(5000);
         ESP.restart();
         return;
     }
@@ -434,7 +437,7 @@ void setup() {
     if (!enableWiFiAP()) {
         Serial.println("\n[ERROR] Failed to enable WiFi AP");
         pClient->disconnect();
-        delay(30000);
+        delay(5000);
         ESP.restart();
         return;
     }
@@ -443,7 +446,7 @@ void setup() {
     if (!waitForAPMode()) {
         Serial.println("\n[ERROR] WiFi AP did not become ready");
         pClient->disconnect();
-        delay(30000);
+        delay(5000);
         ESP.restart();
         return;
     }
@@ -460,7 +463,7 @@ void setup() {
     // Connect to GoPro WiFi
     if (!connectToGoProWiFi()) {
         Serial.println("\n[ERROR] Failed to connect to GoPro WiFi");
-        delay(30000);
+        delay(5000);
         ESP.restart();
         return;
     }
@@ -560,8 +563,8 @@ void loop() {
         wasConnected = false;
     }
     
-    // If disconnected, try full reconnection every 30 seconds
-    if (!isConnected && (millis() - lastReconnectAttempt > 30000)) {
+    // If disconnected, try full reconnection every 5 seconds
+    if (!isConnected && (millis() - lastReconnectAttempt > 5000)) {
         lastReconnectAttempt = millis();
         
         if (reconnectToGoPro()) {
@@ -577,7 +580,7 @@ void loop() {
                 Serial.println("[WARNING] Time sync failed, but connection is established");
             }
         } else {
-            Serial.println("\n[INFO] Reconnection failed, will retry in 30 seconds...");
+            Serial.println("\n[INFO] Reconnection failed, will retry in 5 seconds...");
         }
     }
     
