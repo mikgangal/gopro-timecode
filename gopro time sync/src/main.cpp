@@ -37,6 +37,10 @@
 #define WIFI_CONNECT_TIMEOUT_MS 20000
 #define AP_READY_POLL_ATTEMPTS 25
 
+// Buzzer Configuration
+#define BUZZER_PIN 25           // GPIO pin for buzzer (change if needed)
+#define BEEP_DURATION_MS 200    // Short beep duration
+
 // Global variables
 static NimBLEClient* pClient = nullptr;
 
@@ -62,6 +66,13 @@ class MyClientCallback : public NimBLEClientCallbacks {
         Serial.println("[BLE] Disconnected from GoPro");
     }
 };
+
+// Buzzer control - short beep for successful time sync
+void beep() {
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(BEEP_DURATION_MS);
+    digitalWrite(BUZZER_PIN, LOW);
+}
 
 // Get WiFi SSID from GoPro (by reading characteristic directly)
 bool getWiFiSSID() {
@@ -352,6 +363,11 @@ void setup() {
     Serial.println("ESP32 GoPro Time Sync");
     Serial.println("==================================\n");
     
+    // Initialize buzzer pin
+    pinMode(BUZZER_PIN, OUTPUT);
+    digitalWrite(BUZZER_PIN, LOW);
+    Serial.printf("[BUZZER] Initialized on GPIO %d\n", BUZZER_PIN);
+    
     // Initialize I2C for DS3231 RTC
     Serial.println("[RTC] Initializing DS3231 RTC...");
     Wire.begin();
@@ -453,6 +469,7 @@ void setup() {
     delay(1000); // Give WiFi connection time to stabilize
     if (setGoProDateTime()) {
         Serial.println("\n[SUCCESS] Date/time synchronized!");
+        beep();  // Confirmation beep
     } else {
         Serial.println("\n[WARNING] Failed to set date/time via HTTP");
         Serial.println("The WiFi AP is still available for manual control.");
@@ -554,6 +571,7 @@ void loop() {
             Serial.println("\n[SYNC] Synchronizing time after reconnection...");
             if (setGoProDateTime()) {
                 Serial.println("[SUCCESS] Time synchronized!");
+                beep();  // Confirmation beep
                 lastSync = millis();
             } else {
                 Serial.println("[WARNING] Time sync failed, but connection is established");
@@ -568,6 +586,7 @@ void loop() {
         Serial.println("\n[INFO] Performing periodic time sync...");
         if (setGoProDateTime()) {
             Serial.println("[SUCCESS] Periodic time sync complete!");
+            beep();  // Confirmation beep
             lastSync = millis();
         } else {
             Serial.println("[WARNING] Periodic time sync failed");

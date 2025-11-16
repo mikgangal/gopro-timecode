@@ -11,6 +11,7 @@ This project automatically synchronizes your GoPro camera's internal clock with 
 ✅ **Automatic Time Sync** - Reads accurate time from DS3231 RTC and syncs to GoPro  
 ✅ **Auto-Reconnection** - Detects GoPro power cycles and automatically reconnects  
 ✅ **Periodic Updates** - Re-syncs time every hour while connected  
+✅ **Audio Feedback** - Buzzer beeps once on successful time sync  
 ✅ **Full BLE + WiFi Handling** - Manages BLE connection, WiFi AP enable, and WiFi connection  
 ✅ **Clean Code** - Simplified, well-documented, production-ready
 
@@ -18,13 +19,14 @@ This project automatically synchronizes your GoPro camera's internal clock with 
 
 - **ESP32 Development Board** (any variant with BLE support)
 - **DS3231 RTC Module** (I2C interface with battery backup)
+- **Buzzer** (passive or active, 3.3V-5V compatible)
 - **GoPro Hero 9, 10, or 11 Camera**
 - USB cable for programming ESP32
 - Jumper wires for connections
 
 ## Wiring
 
-Connect the DS3231 RTC module to the ESP32:
+### DS3231 RTC Module
 
 | DS3231 | ESP32 |
 |--------|-------|
@@ -33,7 +35,17 @@ Connect the DS3231 RTC module to the ESP32:
 | SDA    | GPIO 21 |
 | SCL    | GPIO 22 |
 
-> **Note:** Ensure your DS3231 has a backup battery (CR2032) installed to maintain accurate time when powered off.
+### Buzzer
+
+| Buzzer | ESP32 |
+|--------|-------|
+| +      | GPIO 25 |
+| -      | GND   |
+
+> **Notes:** 
+> - Ensure your DS3231 has a backup battery (CR2032) installed to maintain accurate time when powered off
+> - The buzzer will beep once (200ms) whenever time is successfully synchronized
+> - You can change the buzzer pin by modifying `BUZZER_PIN` in the code (default: GPIO 25)
 
 ## Software Requirements
 
@@ -90,7 +102,8 @@ Connect the DS3231 RTC module to the ESP32:
 5. **Enable WiFi AP** - Tells GoPro to turn on its WiFi access point
 6. **WiFi Connection** - ESP32 connects to GoPro's WiFi network
 7. **Time Sync** - Sets GoPro time via HTTP API
-8. **Monitoring** - Continuously monitors connection status
+8. **Audio Confirmation** - Buzzer beeps to confirm successful sync
+9. **Monitoring** - Continuously monitors connection status
 
 ### Automatic Reconnection
 
@@ -124,13 +137,18 @@ Where parameters are hex-encoded:
 
 ## Configuration
 
-You can adjust timing parameters in `main.cpp`:
+You can adjust timing and buzzer parameters in `main.cpp`:
 
 ```cpp
+// Timing Configuration
 #define SCAN_TIME_SECONDS 10              // BLE scan duration
 #define BLE_CONNECT_TIMEOUT_MS 15000      // BLE connection timeout
 #define WIFI_CONNECT_TIMEOUT_MS 20000     // WiFi connection timeout
 #define AP_READY_POLL_ATTEMPTS 25         // WiFi AP ready polling attempts
+
+// Buzzer Configuration
+#define BUZZER_PIN 25                     // GPIO pin for buzzer
+#define BEEP_DURATION_MS 200              // Beep duration (milliseconds)
 ```
 
 Reconnection timing (in `loop()`):
@@ -143,6 +161,12 @@ if (isConnected && (millis() - lastSync > 3600000)) {  // 1 hour
     // Periodic sync logic
 }
 ```
+
+### Buzzer Feedback
+
+- **Single beep (200ms)** - Time synchronized successfully ✅
+
+The buzzer only beeps on successful time sync to avoid annoying error notifications. Check the serial monitor for detailed error messages if time sync fails.
 
 ## Python Script (Windows Only)
 
